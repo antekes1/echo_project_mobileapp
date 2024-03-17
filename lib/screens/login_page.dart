@@ -65,37 +65,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  get_online(BuildContext context) async {
-    try {
-      var response = await http.get(
-        Uri.parse(
-            server_ip + '/status'), // Tutaj przekształcamy ciąg znaków na Uri
-        headers: {"Content-Type": "application/json"},
-      );
-      final responseBody = jsonDecode(response.body);
-      print("Odpowiedź: $responseBody");
-      aa_value = true;
-    } catch (e) {
-      print(e);
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        MyRoutes.NonetRoute,
-        (route) => false,
-      );
-    }
-
-    print(aa_value);
-
-    if (aa_value == true) {
-      String? token_value = await globals.storage.read(key: 'token');
-      print('token_value: $token_value');
-      if (token_value != null) {
-        globals.token = token_value;
-        await get_data(context);
-      }
-    }
-  }
-
   moveToHome(BuildContext context) async {
     if (_formKey.currentState?.validate() == true) {
       Map data = {'username': name, "password": password};
@@ -135,12 +104,7 @@ class _LoginPageState extends State<LoginPage> {
           } else {
             print('Acces denty.');
           }
-        } //else if (responseBody.containsKey('error')) {
-        //   // Błąd logowania
-        //   final error = responseBody['error'];
-
-        //   print('Błąd logowania: $error');
-        // }
+        }
       } else {
         // Obsłuż błąd HTTP
         print('Błąd HTTP: ${response.statusCode}');
@@ -161,11 +125,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => get_online(context));
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) => get_online(context));
+  // }
 
   @override
   Widget build(BuildContext context) {

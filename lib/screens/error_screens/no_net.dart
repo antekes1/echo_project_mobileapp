@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:http/http.dart' as http;
-import '../utils/myGlobals.dart' as globals;
+import '../../utils/myGlobals.dart' as globals;
 
 class NonetPage extends StatefulWidget {
   @override

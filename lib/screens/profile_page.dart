@@ -51,6 +51,11 @@ class _ProfilePageState extends State<ProfilePage> {
           name = responseBody['name'];
           email = responseBody['email'];
           profile_url = server_ip + "/photo/" + responseBody['profile_pic'];
+          globals.username = responseBody['username'];
+          globals.name = responseBody['name'];
+          globals.email = responseBody['email'];
+          globals.profile_pic =
+              server_ip + "/photo/" + responseBody['profile_pic'];
         });
         print(profile_url);
       } //else if (responseBody.containsKey('error')) {

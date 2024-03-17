@@ -1,3 +1,4 @@
+import 'package:echo/screens/storages/storage.dart';
 import 'package:echo/widgets/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -56,13 +57,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      // appBar: AppBar(
-      //   elevation: 0.0,
-      //   iconTheme: IconThemeData(color: Colors.purple[400]),
-      // ),
       body: SafeArea(
         child: Container(
-          // padding: Vx.m32,
           child: Column(children: [
             "Echo app".text.xl5.bold.make(),
             Column(
@@ -85,7 +81,13 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () {
-                          setState(() {});
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => StoragePage(
+                                  storageId: listaObiektow[index][0]),
+                            ),
+                          );
                         },
                         child: Container(
                           width:
@@ -121,12 +123,12 @@ class _HomePageState extends State<HomePage> {
       //     child: Icon(Icons.menu),
       //   ),
       // ),
-      // drawer: MyDrawer(),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: Builder(
-      //   builder: (context) => CustomFABRow(),
-      // ),
-      bottomNavigationBar: EntryPoint(),
+      drawer: MyDrawer(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Builder(
+        builder: (context) => CustomFABRow(),
+      ),
+      // bottomNavigationBar: EntryPoint(),
     );
   }
 }

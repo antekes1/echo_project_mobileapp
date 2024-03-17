@@ -5,7 +5,6 @@ import '../utils/myGlobals.dart' as globals;
 import '../widgets/themes.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:rive/rive.dart';
 
 class CustomFABRow extends StatelessWidget {
   @override

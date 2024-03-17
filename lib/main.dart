@@ -1,10 +1,13 @@
 import 'package:echo/screens/friday_chat.dart';
 import 'package:echo/screens/login_page.dart';
-import 'package:echo/screens/no_net.dart';
+import 'package:echo/screens/error_screens/no_net.dart';
 import 'package:echo/screens/profile_page.dart';
 import 'package:echo/screens/settings.dart';
 import 'package:echo/screens/user/updateUser.dart';
+import 'package:echo/screens/user/changePassword_page.dart';
 import 'package:echo/screens/storages/create_storage.dart';
+import 'package:echo/screens/storages/storage.dart';
+import 'package:echo/widgets/entry_screen.dart';
 import 'package:echo/utils/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,15 +38,17 @@ class MyApp extends StatelessWidget {
       darkTheme: MyTheme.darkTheme(context),
       initialRoute: "/",
       routes: {
-        "/": (context) => LoginPage(),
+        "/": (context) => Entry_screen(),
         MyRoutes.homeRoute: (context) => HomePage(),
         MyRoutes.loginRoute: (context) => LoginPage(),
         MyRoutes.profileRoute: (context) => ProfilePage(),
         MyRoutes.NonetRoute: (context) => NonetPage(),
         MyRoutes.SettingsRoute: (context) => SettingsPage(),
         MyRoutes.FridayChat: (context) => FridayChatPage(),
+        MyRoutes.Storage: (context) => StoragePage(storageId: 0),
         MyRoutes.createStorage: (context) => CreateStoragesPage(),
         MyRoutes.UpdateUser: (context) => UpdateUserPage(),
+        MyRoutes.ChangePassword: (context) => ChangePasswordPage(),
       },
     );
   }
