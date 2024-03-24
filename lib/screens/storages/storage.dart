@@ -1,7 +1,9 @@
 import 'dart:ffi';
 
+import 'package:echo/screens/storages/storage_settings.dart';
 import 'package:echo/widgets/drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:velocity_x/velocity_x.dart';
 import '../../utils/myGlobals.dart' as globals;
 import 'package:flutter/cupertino.dart';
@@ -26,6 +28,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String username = globals.username;
   bool changeButton = false;
+  bool isClicked = false;
 
   String name_storage = "";
   int max_size = 0;
@@ -76,24 +79,43 @@ class _CreateStoragesPageState extends State<StoragePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment
-                      .start, // Ustawienie wyrównania do lewej
-                  children: [
-                    "${name_storage} storage:"
-                        .text
-                        .xl2
-                        .make(), // Zmiana: Dodanie dwukropka po nazwie
-                    Text("${actual_size / 1000}GB of ${max_size}GB"),
-                  ],
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isClicked = !isClicked;
+                  });
+                  Future.delayed(Duration(milliseconds: 10), () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            StorageSettingsPage(storageId: widget.storageId),
+                      ),
+                    );
+                  });
+                },
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment
+                        .start, // Ustawienie wyrównania do lewej
+                    children: [
+                      "${name_storage} storage:"
+                          .text
+                          .xl2
+                          .make(), // Zmiana: Dodanie dwukropka po nazwie
+                      Text("${actual_size / 1000}GB of ${max_size}GB"),
+                    ],
+                  ),
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(17)),
+                    border: Border.all(
+                        color: isClicked
+                            ? Colors.deepPurple.shade700
+                            : Colors.grey),
+                  ),
+                  padding: EdgeInsets.all(9),
                 ),
-                alignment: Alignment.centerLeft,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(17)),
-                  border: Border.all(color: Colors.grey),
-                ),
-                padding: EdgeInsets.all(9),
               ),
               SizedBox(height: 16),
               Container(

@@ -92,7 +92,6 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
   }
 
   UpdateUserInfo(BuildContext context) async {
-    print('test1');
     Map data = {
       'token': globals.token,
       'name': name,
@@ -111,7 +110,6 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
     if (response.statusCode == 200) {
       final responseBody =
           jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
-      print(responseBody);
       if (responseBody.containsKey('msg')) {
         final snackBar = SnackBar(
           content: Text(

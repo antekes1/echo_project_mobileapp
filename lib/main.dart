@@ -7,6 +7,7 @@ import 'package:echo/screens/user/updateUser.dart';
 import 'package:echo/screens/user/changePassword_page.dart';
 import 'package:echo/screens/storages/create_storage.dart';
 import 'package:echo/screens/storages/storage.dart';
+import 'package:echo/screens/storages/storage_settings.dart';
 import 'package:echo/widgets/entry_screen.dart';
 import 'package:echo/utils/routes.dart';
 import 'package:flutter/cupertino.dart';
@@ -46,6 +47,8 @@ class MyApp extends StatelessWidget {
         MyRoutes.SettingsRoute: (context) => SettingsPage(),
         MyRoutes.FridayChat: (context) => FridayChatPage(),
         MyRoutes.Storage: (context) => StoragePage(storageId: 0),
+        MyRoutes.StorageSettings: (context) =>
+            StorageSettingsPage(storageId: 0),
         MyRoutes.createStorage: (context) => CreateStoragesPage(),
         MyRoutes.UpdateUser: (context) => UpdateUserPage(),
         MyRoutes.ChangePassword: (context) => ChangePasswordPage(),

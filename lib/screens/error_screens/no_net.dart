@@ -26,6 +26,11 @@ class _NonetPageState extends State<NonetPage> {
           child: Container(
             padding: Vx.m32,
             child: Column(children: [
+              Image.asset(
+                "assets/images/no_net.png",
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 46),
               Text("No connection found !!!")
                   .text
                   .xl5
@@ -33,11 +38,16 @@ class _NonetPageState extends State<NonetPage> {
                   .color(Colors.blueGrey[100])
                   .make(),
               Text("Try turn on mobile data").text.xl2.make(),
-              SizedBox(height: 46),
-              Image.asset(
-                "assets/images/no_net.png",
-                fit: BoxFit.cover,
-              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => {},
+                child: Text("reload"),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              )
             ]),
           ),
         ));
