@@ -168,6 +168,59 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
     }
   }
 
+  removeUserfromStorage(BuildContext context, String userName) async {
+    Map data = {
+      "token": globals.token,
+      "storage_id": widget.storageId,
+      "action": "remove_users",
+      "updated_users_usernames": [userName],
+    };
+    var body = json.encode(data);
+
+    var response = await http.put(
+        Uri.parse(server_ip +
+            '/storage/users'), // Tutaj przekształcamy ciąg znaków na Uri
+        headers: {"Content-Type": "application/json"},
+        body: body);
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      Get_storage_users(context);
+      if (responseBody.containsKey('msg')) {
+        if (responseBody['msg'] == 'succes') {
+          final snackBar = SnackBar(
+            content: Text(
+              'User remove successfully',
+              style: TextStyle(color: Colors.white),
+            ),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.black,
+            elevation: 0.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+                side: BorderSide(color: Colors.deepPurple, width: 2)),
+            behavior: SnackBarBehavior.floating,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        } else {
+          final snackBar = SnackBar(
+            content: Text(
+              responseBody['errors'][0],
+              style: TextStyle(color: Colors.white),
+            ),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.black,
+            elevation: 0.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+                side: BorderSide(color: Colors.deepPurple, width: 2)),
+            behavior: SnackBarBehavior.floating,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      }
+    }
+  }
+
   UpdateStorageInfo(BuildContext context) async {
     print(name_storage);
     print(storage_description);
@@ -359,7 +412,41 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(actual_users[index]),
-                                            Icon(Icons.delete_forever)
+                                            InkWell(
+                                                onTap: () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          AlertDialog(
+                                                            title: Text(
+                                                                "Delete user"),
+                                                            content: Text(
+                                                                "Deleting user form storage. User will not have acces to this storage"),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  removeUserfromStorage(
+                                                                      context,
+                                                                      actual_users[
+                                                                          index]);
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child:
+                                                                    Text('ok'),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                        context),
+                                                                child: Text(
+                                                                    "cancle"),
+                                                              ),
+                                                            ],
+                                                          ));
+                                                },
+                                                child:
+                                                    Icon(Icons.delete_forever))
                                           ],
                                         ),
                                         padding: EdgeInsets.all(10),
