@@ -80,12 +80,11 @@ class _LoginPageState extends State<LoginPage> {
         // Odpowiedź jest poprawna
         final responseBody =
             jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
-        print(responseBody);
         if (responseBody.containsKey('acces_token')) {
           // Zalogowano pomyślnie
           final atoken = responseBody['acces_token'];
 
-          print('Zalogowano pomyślnie: token=$atoken');
+          //print('Zalogowano pomyślnie: token=$atoken');
 
           if (atoken != 'None') {
             globals.token = atoken;

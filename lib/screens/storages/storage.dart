@@ -1,5 +1,6 @@
 import 'dart:ffi';
-
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:echo/screens/storages/storage_settings.dart';
 import 'package:echo/widgets/drawer.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
+import '../../utils/convertions_funtions.dart';
+import '../../utils/api//notifications_api.dart';
 
 class StoragePage extends StatefulWidget {
   final int storageId;
@@ -82,11 +85,61 @@ class _CreateStoragesPageState extends State<StoragePage> {
 
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody = jsonDecode(response.body);
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
       // Zalogowano pomyślnie
       setState(() {
         actualFiles = responseBody;
       });
+    } else {
+      // Obsłuż błąd HTTP
+      print('Błąd HTTP: ${response.statusCode}');
+      print('Treść odpowiedzi: ${response.body}');
+    }
+  }
+
+  Download_file(BuildContext context, String Filename) async {
+    Map data = {
+      'token': globals.token,
+      'database_id': widget.storageId,
+      'file_path': actualPath + Filename,
+      "filename": Filename,
+    };
+    var body = json.encode(data);
+    var response = await http.post(
+        Uri.parse(server_ip +
+            '/storage/get_file'), // Tutaj przekształcamy ciąg znaków na Uri
+        headers: {"Content-Type": "application/json"},
+        body: body);
+
+    if (response.statusCode == 200) {
+      // Odpowiedź jest poprawna
+      // final hej = utf8.decode(response.bodyBytes);
+      // final responseBody = jsonDecode(hej);
+      final bytes = response.bodyBytes;
+      if (Platform.isIOS) {
+        final directory = await getApplicationDocumentsDirectory();
+        print(directory);
+        final file = File('${directory.path}/$Filename');
+        await file.writeAsBytes(bytes);
+      } else {
+        final directory = Directory('/storage/emulated/0/Download');
+        // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
+        // ignore: avoid_slow_async_io
+        if (!await directory.exists()) {
+          final directory2 = await getExternalStorageDirectory();
+          print(directory2);
+          final file = File('${directory2}/$Filename');
+          await file.writeAsBytes(bytes);
+        } else {
+          final file = File('${directory.path}/$Filename');
+          await file.writeAsBytes(bytes);
+        }
+      }
+      NotificationService().showNotification(
+          title: "Downloaded compleated",
+          body: "downloading file $Filename is compleated");
+      print('Plik został pobrany i zapisany pomyślnie.');
     } else {
       // Obsłuż błąd HTTP
       print('Błąd HTTP: ${response.statusCode}');
@@ -236,6 +289,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                     });
                                     Get_fiels_names(context);
                                   }
+                                  if (actualFiles[index][0] == 'file') {}
                                 },
                                 child: Container(
                                   child: Align(
@@ -258,7 +312,27 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                               SizedBox(
                                                 width: 2,
                                               ),
-                                              Text(actualFiles[index][0]),
+                                              Expanded(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(actualFiles[index][0]),
+                                                    if (actualFiles[index][1] ==
+                                                        'file')
+                                                      InkWell(
+                                                          onTap: () {
+                                                            Download_file(
+                                                                context,
+                                                                actualFiles[
+                                                                    index][0]);
+                                                          },
+                                                          child: Icon(
+                                                              Icons.download)),
+                                                  ],
+                                                ),
+                                              ),
                                             ],
                                           ))),
                                   margin: EdgeInsets.all(3),

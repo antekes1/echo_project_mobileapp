@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // get_online(context);
     return MaterialApp(
+      locale: const Locale('pl', 'PL'),
       themeMode: ThemeMode.dark,
       theme: MyTheme.lightTheme(context),
       debugShowCheckedModeBanner: false,

@@ -51,12 +51,7 @@ class _CreateStoragesPageState extends State<Entry_screen> {
           '/home',
           (route) => false,
         );
-      } //else if (responseBody.containsKey('error')) {
-      //   // Błąd logowania
-      //   final error = responseBody['error'];
-
-      //   print('Błąd logowania: $error');
-      // }
+      }
     } else {
       print('Błąd HTTP: ${response.statusCode}');
       print('Treść odpowiedzi: ${response.body}');
