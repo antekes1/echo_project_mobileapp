@@ -1,5 +1,5 @@
-import 'dart:ffi';
 import 'dart:io';
+import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:echo/screens/storages/storage_settings.dart';
 import 'package:echo/widgets/drawer.dart';
@@ -27,6 +27,7 @@ class StoragePage extends StatefulWidget {
 }
 
 class _CreateStoragesPageState extends State<StoragePage> {
+  late final LocalNotificationService service;
   String atoken = globals.token;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String username = globals.username;
@@ -98,6 +99,78 @@ class _CreateStoragesPageState extends State<StoragePage> {
     }
   }
 
+  SaveFile(BuildContext context, String filename, final response) async {
+    final bytes = response.bodyBytes;
+    if (Platform.isIOS) {
+      final directory = await getApplicationDocumentsDirectory();
+      final originalFile = File('${directory.path}/$filename');
+      if (await originalFile.exists()) {
+        int version = 1;
+        String newFilename;
+
+        // Szukaj unikalnej nazwy pliku z numerem wersji
+        do {
+          newFilename = '${directory.path}/$filename ($version)';
+          version++;
+        } while (await File(newFilename).exists());
+        await originalFile.copy(newFilename);
+      }
+
+      // Zapisz nowy plik
+      await originalFile.writeAsBytes(bytes);
+      // final file = File('${directory.path}/$filename');
+      // await file.writeAsBytes(bytes);
+    } else {
+      final directory = Directory('/storage/emulated/0/Download');
+      // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
+      if (!await directory.exists()) {
+        final directory2 = await getExternalStorageDirectory();
+        final originalFile = File('${directory2}/$filename');
+        if (await originalFile.exists()) {
+          int version = 1;
+          String newFilename;
+
+          // Szukaj unikalnej nazwy pliku z numerem wersji
+          do {
+            newFilename = '${directory2}/$filename ($version)';
+            version++;
+          } while (await File(newFilename).exists());
+          await originalFile.copy(newFilename);
+        }
+
+        // Zapisz nowy plik
+        await originalFile.writeAsBytes(bytes);
+        // final file = File('${directory.path}/$filename');
+        // await file.writeAsBytes(bytes);
+      } else {
+        final file = File('${directory.path}/$filename');
+        final originalFile = File('${directory.path}/$filename');
+        if (await originalFile.exists()) {
+          int version = 1;
+          String newFilename;
+
+          // Szukaj unikalnej nazwy pliku z numerem wersji
+          do {
+            newFilename = '${directory.path}/$filename ($version)';
+            version++;
+          } while (await File(newFilename).exists());
+          await originalFile.copy(newFilename);
+        }
+
+        // Zapisz nowy plik
+        await originalFile.writeAsBytes(bytes);
+        // final file = File('${directory.path}/$filename');
+        // await file.writeAsBytes(bytes);
+      }
+    }
+    // Notification
+    await service.showNotification(
+        id: 0,
+        body: "Downloading file $filename is completed",
+        title: "Download completed");
+    print('Plik został pobrany i zapisany pomyślnie.');
+  }
+
   Download_file(BuildContext context, String Filename) async {
     Map data = {
       'token': globals.token,
@@ -117,29 +190,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
       // final hej = utf8.decode(response.bodyBytes);
       // final responseBody = jsonDecode(hej);
       final bytes = response.bodyBytes;
-      if (Platform.isIOS) {
-        final directory = await getApplicationDocumentsDirectory();
-        print(directory);
-        final file = File('${directory.path}/$Filename');
-        await file.writeAsBytes(bytes);
-      } else {
-        final directory = Directory('/storage/emulated/0/Download');
-        // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
-        // ignore: avoid_slow_async_io
-        if (!await directory.exists()) {
-          final directory2 = await getExternalStorageDirectory();
-          print(directory2);
-          final file = File('${directory2}/$Filename');
-          await file.writeAsBytes(bytes);
-        } else {
-          final file = File('${directory.path}/$Filename');
-          await file.writeAsBytes(bytes);
-        }
-      }
-      NotificationService().showNotification(
-          title: "Downloaded compleated",
-          body: "downloading file $Filename is compleated");
-      print('Plik został pobrany i zapisany pomyślnie.');
+      await SaveFile(context, Filename, response);
     } else {
       // Obsłuż błąd HTTP
       print('Błąd HTTP: ${response.statusCode}');
@@ -165,6 +216,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
 
   @override
   void initState() {
+    service = LocalNotificationService();
+    service.intialize();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => Get_data(context));
   }
@@ -179,6 +232,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // nazwa storage z danymi
               GestureDetector(
                 onTap: () {
                   setState(() {
@@ -218,11 +272,13 @@ class _CreateStoragesPageState extends State<StoragePage> {
                 ),
               ),
               SizedBox(height: 16),
+              // reszta
               Expanded(
                 child: Container(
                   alignment: Alignment.center,
                   child: Column(
                     children: [
+                      // path with back button
                       Container(
                         child: Row(
                           children: [
@@ -271,6 +327,159 @@ class _CreateStoragesPageState extends State<StoragePage> {
                       SizedBox(
                         height: 8,
                       ),
+                      // creating dir
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          width: 75,
+                          alignment: Alignment.center,
+                          child: InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return FractionallySizedBox(
+                                    widthFactor: 1.0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(25),
+                                          topRight: Radius.circular(25),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(height: 16.0),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {},
+                                                child: Container(
+                                                  height: 100,
+                                                  width: 60,
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Container(
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: Icon(Icons
+                                                              .upload_file_outlined),
+                                                          decoration: BoxDecoration(
+                                                              border: Border.all(
+                                                                  color: Colors
+                                                                      .white),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30)),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "Upload file",
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 12,
+                                              ),
+                                              InkWell(
+                                                onTap: () {},
+                                                child: Container(
+                                                  height: 100,
+                                                  width: 60,
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Container(
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: Icon(Icons
+                                                              .create_new_folder_rounded),
+                                                          decoration: BoxDecoration(
+                                                              border: Border.all(
+                                                                  color: Colors
+                                                                      .white),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30)),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "create dir",
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          // ElevatedButton(
+                                          //   onPressed: () {
+                                          //     // Kod obsługujący upload pliku
+                                          //     Navigator.pop(context);
+                                          //   },
+                                          //   child: Text('Wybierz plik'),
+                                          // ),
+                                          SizedBox(height: 8.0),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              // Kod obsługujący upload zdjęcia
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text('anuluj'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 75,
+                              child: Text("New",
+                                  style: TextStyle(color: Colors.black)),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Colors.cyan.shade600,
+                                  border: Border.all(
+                                      color: Colors.blueGrey.shade700),
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      // content list
                       AnimatedContainer(
                         duration: Duration(milliseconds: 200),
                         constraints: const BoxConstraints.expand(height: 500),
