@@ -11,10 +11,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:echo/utils/routes.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
 import '../../utils/convertions_funtions.dart';
 import '../../utils/api//notifications_api.dart';
+import 'package:file_picker/file_picker.dart';
 
 class StoragePage extends StatefulWidget {
   final int storageId;
@@ -29,6 +31,7 @@ class StoragePage extends StatefulWidget {
 class _CreateStoragesPageState extends State<StoragePage> {
   late final LocalNotificationService service;
   String atoken = globals.token;
+  final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String username = globals.username;
   final server_ip = globals.server_ip;
@@ -41,6 +44,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
   bool changeButton = false;
   bool isClicked = false;
 
+  List dirs_errors = [];
+  String newDirName = "";
   String actualPath = "/";
   List actualFiles = [];
 
@@ -99,6 +104,70 @@ class _CreateStoragesPageState extends State<StoragePage> {
     }
   }
 
+  Add_dir_remote(BuildContext context, String dir_name) async {
+    Map data = {
+      'token': globals.token,
+      'storage_id': widget.storageId,
+      'path': actualPath + dir_name,
+    };
+    var body = json.encode(data);
+    var response = await http.post(
+        Uri.parse(server_ip +
+            '/storage/create_dir'), // Tutaj przekształcamy ciąg znaków na Uri
+        headers: {"Content-Type": "application/json"},
+        body: body);
+
+    if (response.statusCode == 201) {
+      // Odpowiedź jest poprawna
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      if (responseBody.containsKey("msg")) {
+        final snackBar = SnackBar(
+          content: Text(
+            "folder created succesful",
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        //ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      await Get_fiels_names(context);
+    } else {
+      // Obsłuż błąd HTTP
+      print('Błąd HTTP: ${response.statusCode}');
+      print('Treść odpowiedzi: ${response.body}');
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final scaffoldState = scaffoldKey.currentState;
+
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["detail"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      final error = responseBody["detail"];
+      setState(() {
+        dirs_errors.add(error);
+      });
+
+      //ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
   SaveFile(BuildContext context, String filename, final response) async {
     final bytes = response.bodyBytes;
     if (Platform.isIOS) {
@@ -113,13 +182,24 @@ class _CreateStoragesPageState extends State<StoragePage> {
           newFilename = '${directory.path}/$filename ($version)';
           version++;
         } while (await File(newFilename).exists());
-        await originalFile.copy(newFilename);
+        List parts = filename.split('.');
+        if (parts.length > 1) {
+          String name = parts
+              .sublist(0, parts.length - 1)
+              .join('.'); // Uzyskaj nazwę pliku bez rozszerzenia
+          String extension = parts.last; // Uzyskaj rozszerzenie pliku
+
+          // Szukaj unikalnej nazwy pliku z numerem wersji
+          do {
+            newFilename = '${directory.path}/$name ($version).$extension';
+            version++;
+          } while (await File(newFilename).exists());
+          await originalFile.copy(newFilename);
+        }
       }
 
       // Zapisz nowy plik
       await originalFile.writeAsBytes(bytes);
-      // final file = File('${directory.path}/$filename');
-      // await file.writeAsBytes(bytes);
     } else {
       final directory = Directory('/storage/emulated/0/Download');
       // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
@@ -131,17 +211,24 @@ class _CreateStoragesPageState extends State<StoragePage> {
           String newFilename;
 
           // Szukaj unikalnej nazwy pliku z numerem wersji
-          do {
-            newFilename = '${directory2}/$filename ($version)';
-            version++;
-          } while (await File(newFilename).exists());
-          await originalFile.copy(newFilename);
+          List parts = filename.split('.');
+          if (parts.length > 1) {
+            String name = parts
+                .sublist(0, parts.length - 1)
+                .join('.'); // Uzyskaj nazwę pliku bez rozszerzenia
+            String extension = parts.last; // Uzyskaj rozszerzenie pliku
+
+            // Szukaj unikalnej nazwy pliku z numerem wersji
+            do {
+              newFilename = '${directory2}/$name ($version).$extension';
+              version++;
+            } while (await File(newFilename).exists());
+            await originalFile.copy(newFilename);
+          }
         }
 
         // Zapisz nowy plik
         await originalFile.writeAsBytes(bytes);
-        // final file = File('${directory.path}/$filename');
-        // await file.writeAsBytes(bytes);
       } else {
         final file = File('${directory.path}/$filename');
         final originalFile = File('${directory.path}/$filename');
@@ -150,17 +237,24 @@ class _CreateStoragesPageState extends State<StoragePage> {
           String newFilename;
 
           // Szukaj unikalnej nazwy pliku z numerem wersji
-          do {
-            newFilename = '${directory.path}/$filename ($version)';
-            version++;
-          } while (await File(newFilename).exists());
-          await originalFile.copy(newFilename);
+          List parts = filename.split('.');
+          if (parts.length > 1) {
+            String name = parts
+                .sublist(0, parts.length - 1)
+                .join('.'); // Uzyskaj nazwę pliku bez rozszerzenia
+            String extension = parts.last; // Uzyskaj rozszerzenie pliku
+
+            // Szukaj unikalnej nazwy pliku z numerem wersji
+            do {
+              newFilename = '${directory.path}/$name ($version).$extension';
+              version++;
+            } while (await File(newFilename).exists());
+            await originalFile.copy(newFilename);
+          }
         }
 
         // Zapisz nowy plik
         await originalFile.writeAsBytes(bytes);
-        // final file = File('${directory.path}/$filename');
-        // await file.writeAsBytes(bytes);
       }
     }
     // Notification
@@ -195,6 +289,56 @@ class _CreateStoragesPageState extends State<StoragePage> {
       // Obsłuż błąd HTTP
       print('Błąd HTTP: ${response.statusCode}');
       print('Treść odpowiedzi: ${response.body}');
+    }
+  }
+
+  TextEditingController _controller = TextEditingController();
+
+  UploadFile(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      PlatformFile file = result.files.first;
+
+      String fileName = file.name;
+      String filePath = file.path!;
+
+      var url = Uri.parse(
+          server_ip + '/storage/upload_file'); // Zmień na odpowiedni adres URL
+      var request = http.MultipartRequest('POST', url);
+      request.fields['token'] = globals.token; // Dodaj pola formularza
+      request.fields['dir_path'] = actualPath;
+      request.fields['database_id'] = widget.storageId.toString();
+
+      // Dodaj wybrany plik do requesta
+      request.files.add(http.MultipartFile(
+        'file', // Nazwa pola w formularzu
+        File(filePath).readAsBytes().asStream(), // Strumień danych pliku
+        File(filePath).lengthSync(), // Rozmiar pliku
+        filename: fileName, // Nazwa pliku
+        contentType: MediaType('application', 'octet-stream'), // Typ zawartości
+      ));
+
+      var response = await http.Response.fromStream(await request.send());
+      if (response.statusCode == 200) {
+        // Odpowiedź jest poprawna
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        // Zalogowano pomyślnie
+        print(responseBody);
+        Get_fiels_names(context);
+      } else {
+        // Obsłuż błąd HTTP
+        print('Błąd HTTP: ${response.statusCode}');
+        print('Treść odpowiedzi: ${response.body}');
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        setState(() {
+          dirs_errors.add(responseBody["detail"]);
+        });
+      }
+    } else {
+      // Użytkownik anulował wybór pliku
     }
   }
 
@@ -361,7 +505,9 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                                 CrossAxisAlignment.center,
                                             children: [
                                               InkWell(
-                                                onTap: () {},
+                                                onTap: () {
+                                                  UploadFile(context);
+                                                },
                                                 child: Container(
                                                   height: 100,
                                                   width: 60,
@@ -400,8 +546,83 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                               SizedBox(
                                                 width: 12,
                                               ),
-                                              InkWell(
-                                                onTap: () {},
+                                              GestureDetector(
+                                                onTap: () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              'Create folder'),
+                                                          content: Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Text(
+                                                                  "Enter folder name"),
+                                                              Form(
+                                                                key: _formKey,
+                                                                child:
+                                                                    TextFormField(
+                                                                  decoration:
+                                                                      InputDecoration(
+                                                                    labelText:
+                                                                        'name',
+                                                                  ),
+                                                                  validator:
+                                                                      (value) {
+                                                                    if (value
+                                                                            ?.isEmpty ??
+                                                                        true) {
+                                                                      return "That can't be empty :)";
+                                                                    }
+                                                                    return null;
+                                                                  },
+                                                                  onChanged:
+                                                                      (value) {
+                                                                    setState(
+                                                                        () {
+                                                                      newDirName =
+                                                                          value;
+                                                                    });
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                if (_formKey
+                                                                        .currentState
+                                                                        ?.validate() ==
+                                                                    true) {
+                                                                  Add_dir_remote(
+                                                                      context,
+                                                                      newDirName);
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                }
+                                                              },
+                                                              child: Text(
+                                                                  'Create'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child:
+                                                                  Text('Close'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      });
+                                                },
                                                 child: Container(
                                                   height: 100,
                                                   width: 60,
@@ -439,13 +660,6 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                               ),
                                             ],
                                           ),
-                                          // ElevatedButton(
-                                          //   onPressed: () {
-                                          //     // Kod obsługujący upload pliku
-                                          //     Navigator.pop(context);
-                                          //   },
-                                          //   child: Text('Wybierz plik'),
-                                          // ),
                                           SizedBox(height: 8.0),
                                           ElevatedButton(
                                             onPressed: () {
@@ -480,6 +694,15 @@ class _CreateStoragesPageState extends State<StoragePage> {
                         height: 3,
                       ),
                       // content list
+                      if (dirs_errors.isNotEmpty)
+                        for (String error in dirs_errors)
+                          Text(
+                            error,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                      SizedBox(
+                        height: 4,
+                      ),
                       AnimatedContainer(
                         duration: Duration(milliseconds: 200),
                         constraints: const BoxConstraints.expand(height: 500),
