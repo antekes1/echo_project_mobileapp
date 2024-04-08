@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:http/http.dart' as http;
 import '../../utils/myGlobals.dart' as globals;
+import '../../widgets/entry_screen.dart';
 
 class NonetPage extends StatefulWidget {
   @override
@@ -40,7 +41,10 @@ class _NonetPageState extends State<NonetPage> {
               Text("Try turn on mobile data").text.xl2.make(),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => {},
+                onPressed: () => {
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, "/", (route) => false)
+                },
                 child: Text("reload"),
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(

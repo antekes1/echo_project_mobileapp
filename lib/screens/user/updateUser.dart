@@ -224,7 +224,9 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
                 alignment: Alignment.centerRight,
                 child: Container(
                     child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, MyRoutes.ChangePassword);
+                  },
                   child: AnimatedContainer(
                     duration: Duration(seconds: 1),
                     width: 170,

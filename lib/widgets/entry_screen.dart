@@ -11,10 +11,10 @@ import '../../utils/CustomFABRow.dart';
 
 class Entry_screen extends StatefulWidget {
   @override
-  State<Entry_screen> createState() => _CreateStoragesPageState();
+  State<Entry_screen> createState() => _Entry_screenState();
 }
 
-class _CreateStoragesPageState extends State<Entry_screen> {
+class _Entry_screenState extends State<Entry_screen> {
   String atoken = globals.token;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String username = globals.username;
@@ -43,6 +43,7 @@ class _CreateStoragesPageState extends State<Entry_screen> {
           globals.username = responseBody['username'];
           globals.name = responseBody['name'];
           globals.email = responseBody['email'];
+          globals.account_type = responseBody['account_type'];
           globals.profile_pic =
               server_ip + "/photo/" + responseBody['profile_pic'];
         });

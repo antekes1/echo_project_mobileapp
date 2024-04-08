@@ -14,7 +14,7 @@ import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
-import '../../utils/convertions_funtions.dart';
+import '../../utils/custom_funtions.dart';
 import '../../utils/api//notifications_api.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -326,7 +326,22 @@ class _CreateStoragesPageState extends State<StoragePage> {
         final responseBody = jsonDecode(hej);
         // Zalogowano pomyślnie
         print(responseBody);
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody["msg"],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
         Get_fiels_names(context);
+        Get_data(context);
       } else {
         // Obsłuż błąd HTTP
         print('Błąd HTTP: ${response.statusCode}');
@@ -339,6 +354,60 @@ class _CreateStoragesPageState extends State<StoragePage> {
       }
     } else {
       // Użytkownik anulował wybór pliku
+    }
+  }
+
+  DeleteItem(BuildContext context, String filename) async {
+    Map data = {
+      'token': globals.token,
+      'storage_id': widget.storageId,
+      'path': actualPath + filename,
+    };
+    var body = json.encode(data);
+    var response = await http.delete(
+        Uri.parse(server_ip +
+            '/storage/del_item'), // Tutaj przekształcamy ciąg znaków na Uri
+        headers: {"Content-Type": "application/json"},
+        body: body);
+
+    if (response.statusCode == 200) {
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["msg"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      await Get_fiels_names(context);
+      await Get_data(context);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      print('Błąd HTTP: ${response.statusCode}');
+      print('Treść odpowiedzi: ${response.body}');
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["detail"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -471,7 +540,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
                       SizedBox(
                         height: 8,
                       ),
-                      // creating dir
+                      // creating dir upload
                       Align(
                         alignment: Alignment.centerRight,
                         child: Container(
@@ -505,8 +574,9 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                                 CrossAxisAlignment.center,
                                             children: [
                                               InkWell(
-                                                onTap: () {
-                                                  UploadFile(context);
+                                                onTap: () async {
+                                                  await UploadFile(context);
+                                                  Navigator.pop(context);
                                                 },
                                                 child: Container(
                                                   height: 100,
@@ -751,17 +821,39 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(actualFiles[index][0]),
-                                                    if (actualFiles[index][1] ==
-                                                        'file')
-                                                      InkWell(
+                                                    Row(
+                                                      children: [
+                                                        InkWell(
                                                           onTap: () {
-                                                            Download_file(
+                                                            DeleteItem(
                                                                 context,
                                                                 actualFiles[
                                                                     index][0]);
                                                           },
                                                           child: Icon(
-                                                              Icons.download)),
+                                                            Icons.delete,
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
+                                                        if (actualFiles[index]
+                                                                [1] ==
+                                                            'file')
+                                                          InkWell(
+                                                              onTap: () {
+                                                                Download_file(
+                                                                    context,
+                                                                    actualFiles[
+                                                                            index]
+                                                                        [0]);
+                                                              },
+                                                              child: Icon(
+                                                                Icons.download,
+                                                                color: Colors
+                                                                    .green
+                                                                    .shade300,
+                                                              )),
+                                                      ],
+                                                    ),
                                                   ],
                                                 ),
                                               ),

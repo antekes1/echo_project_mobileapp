@@ -42,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
           globals.username = responseBody['username'];
           globals.name = responseBody['name'];
           globals.email = responseBody['email'];
+          globals.account_type = responseBody['account_type'];
           globals.profile_pic =
               server_ip + "/photo/" + responseBody['profile_pic'];
         });

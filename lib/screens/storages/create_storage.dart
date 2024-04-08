@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:echo/widgets/drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:velocity_x/velocity_x.dart';
 import '../../utils/myGlobals.dart' as globals;
 import 'package:flutter/cupertino.dart';
@@ -19,46 +22,88 @@ class _CreateStoragesPageState extends State<CreateStoragesPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String username = globals.username;
   bool changeButton = false;
+  final _formKey = GlobalKey<FormState>();
+
+  String name = "";
+  String description = "";
+  double minValue = 0;
+  double maxValue = 5;
+  double _selectedValue = 5;
 
   final server_ip = globals.server_ip;
 
-  del_token(BuildContext context) async {
-    var response = await http.post(
-      Uri.parse(server_ip +
-          '/auth/delete_token/' +
-          globals.token), // Tutaj przekształcamy ciąg znaków na Uri
-      headers: {"Content-Type": "application/json"},
-    );
-
-    if (response.statusCode == 200) {
-      // Odpowiedź jest poprawna
-      final responseBody =
-          jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
-
-      if (responseBody == true) {
-        // Zalogowano pomyślnie
-        setState(() {
-          changeButton = true;
-        });
-        await globals.storage.delete(key: 'token');
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          MyRoutes.loginRoute,
-          (route) => false,
-        );
-      }
+  GetData(BuildContext context) async {
+    if (globals.account_type == "owner" || globals.account_type == "admin") {
+      setState(() {
+        maxValue = 120;
+      });
     } else {
-      // Obsłuż błąd HTTP
-      print('Błąd HTTP: ${response.statusCode}');
-      print('Treść odpowiedzi: ${response.body}');
+      print(globals.account_type);
     }
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) => GetData(context));
-  // }
+  create_storage(BuildContext context, String name, String description) async {
+    if (_formKey.currentState?.validate() == true) {
+      Map data = {
+        'token': globals.token,
+        'name': name,
+        'descr': description,
+        "size": _selectedValue,
+      };
+      var body = json.encode(data);
+      var response = await http.post(
+          Uri.parse(server_ip +
+              '/storage/create_storage'), // Tutaj przekształcamy ciąg znaków na Uri
+          headers: {"Content-Type": "application/json"},
+          body: body);
+
+      if (response.statusCode == 200) {
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        print(responseBody);
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody["msg"],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      } else {
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        // Obsłuż błąd HTTP
+        print('Błąd HTTP: ${response.statusCode}');
+        print('Treść odpowiedzi: ${response.body}');
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody["detail"],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => GetData(context));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +116,7 @@ class _CreateStoragesPageState extends State<CreateStoragesPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                child: "Settings".text.xl5.bold.make(),
+                child: "Create new storage".text.xl5.make(),
               ),
               SizedBox(height: 16),
               // Dodaj odstęp między "Profile app" a innymi segmentami
@@ -79,7 +124,96 @@ class _CreateStoragesPageState extends State<CreateStoragesPage> {
                 padding: EdgeInsets.only(bottom: 20),
                 child: Align(
                   alignment: Alignment.center,
-                  child: "Username: $username".text.xl2.make(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  hintText: "Enter name",
+                                  labelText: "name",
+                                ),
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return "This cannot be empty";
+                                  }
+                                  return null;
+                                },
+                                onChanged: (value) {
+                                  setState(() {
+                                    name = value;
+                                  });
+                                },
+                              ),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  hintText: "Enter description",
+                                  labelText: "description",
+                                ),
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return "This cannot be empty";
+                                  }
+                                  return null;
+                                },
+                                onChanged: (value) {
+                                  setState(() {
+                                    description = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          )),
+                      SizedBox(
+                        height: 12,
+                      ),
+                      Text("Select size of storage"),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Slider(
+                                value: _selectedValue,
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    _selectedValue = newValue;
+                                  });
+                                },
+                                min: minValue,
+                                max: maxValue,
+                                divisions: null,
+                                label: _selectedValue.toStringAsFixed(2)),
+                          ),
+                          Text("${_selectedValue.toStringAsFixed(2)} GB"),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 12,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          create_storage(context, name, description);
+                        },
+                        child: Container(
+                          height: 50,
+                          width: 100,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: Colors.cyan.shade600,
+                              border: Border.all(color: Colors.purple.shade600),
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Text(
+                            "Create",
+                            style: TextStyle(color: Colors.purple.shade800),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ],
