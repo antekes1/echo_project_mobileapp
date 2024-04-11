@@ -74,6 +74,7 @@ class _CreateStoragesPageState extends State<CreateStoragesPage> {
               side: BorderSide(color: Colors.deepPurple, width: 2)),
           behavior: SnackBarBehavior.floating,
         );
+        await Navigator.pushNamed(context, MyRoutes.homeRoute);
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       } else {
         final hej = utf8.decode(response.bodyBytes);

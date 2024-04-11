@@ -56,7 +56,8 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
         body: body);
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody = jsonDecode(response.body);
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
       // Zalogowano pomyślnie
       setState(() {
         actual_users = responseBody["current_users"];
@@ -79,7 +80,8 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
 
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody = jsonDecode(response.body);
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
       // Zalogowano pomyślnie
       setState(() {
         name_storage = responseBody['name'];
@@ -114,7 +116,8 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
           headers: {"Content-Type": "application/json"},
           body: body);
       if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
         Get_storage_users(context);
         if (responseBody.containsKey('msg')) {
           if (responseBody['msg'] == 'succes') {
@@ -165,6 +168,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
         behavior: SnackBarBehavior.floating,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      Get_storage_users(context);
     }
   }
 
@@ -184,7 +188,6 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
         body: body);
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-      Get_storage_users(context);
       if (responseBody.containsKey('msg')) {
         if (responseBody['msg'] == 'succes') {
           final snackBar = SnackBar(
@@ -200,23 +203,25 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                 side: BorderSide(color: Colors.deepPurple, width: 2)),
             behavior: SnackBarBehavior.floating,
           );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        } else {
-          final snackBar = SnackBar(
-            content: Text(
-              responseBody['errors'][0],
-              style: TextStyle(color: Colors.white),
-            ),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.black,
-            elevation: 0.0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-                side: BorderSide(color: Colors.deepPurple, width: 2)),
-            behavior: SnackBarBehavior.floating,
-          );
+          await Get_storage_users(context);
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
+      } else {
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody['errors'][0],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        await Get_storage_users(context);
       }
     }
   }
@@ -235,7 +240,8 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
         headers: {"Content-Type": "application/json"}, body: body);
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody = jsonDecode(response.body);
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
       if (responseBody.containsKey('msg')) {
         final snackBar = SnackBar(
           content: Text(
@@ -275,6 +281,56 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
       final snackBar = SnackBar(
         content: Text(
           responseBody['detail'],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  deleteStorage(BuildContext context) async {
+    Map data = {
+      "token": globals.token,
+      "storage_id": widget.storageId,
+    };
+    var body = json.encode(data);
+    var response = await http.post(
+        Uri.parse(server_ip +
+            '/storage/delete_storage'), // Tutaj przekształcamy ciąg znaków na Uri
+        headers: {"Content-Type": "application/json"},
+        body: body);
+
+    if (response.statusCode == 200) {
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["msg"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      await Navigator.pushNamed(context, MyRoutes.homeRoute);
+    } else {
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["detail"],
           style: TextStyle(color: Colors.white),
         ),
         duration: Duration(seconds: 2),
@@ -341,7 +397,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                       .make()),
               SizedBox(height: 16),
               Container(
-                height: 500,
+                height: 570,
                 child: ListView(scrollDirection: Axis.vertical, children: [
                   "Add or delete users to your storage: ".text.makeCentered(),
                   Container(
@@ -424,8 +480,9 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                                                                 "Deleting user form storage. User will not have acces to this storage"),
                                                             actions: [
                                                               TextButton(
-                                                                onPressed: () {
-                                                                  removeUserfromStorage(
+                                                                onPressed:
+                                                                    () async {
+                                                                  await removeUserfromStorage(
                                                                       context,
                                                                       actual_users[
                                                                           index]);
@@ -525,6 +582,45 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                             },
                             child: Text("Update")),
                       ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: Text("Delete storage"),
+                                content: Text(
+                                    "Deleting storage, after performing this action, the data will be lost. Do you want to continue ?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      await deleteStorage(context);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('ok'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text("cancle"),
+                                  ),
+                                ],
+                              ));
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 60,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.purple.shade300)),
+                      child: Text(
+                        "Delete this storage",
+                        style: TextStyle(),
+                      ),
                     ),
                   ),
                 ]),

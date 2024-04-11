@@ -27,35 +27,59 @@ class _CreateStoragesPageState extends State<ChangePasswordPage> {
   String new_pass1 = "";
   String new_pass2 = "";
 
-  del_token(BuildContext context) async {
-    var response = await http.post(
-      Uri.parse(server_ip +
-          '/auth/delete_token/' +
-          globals.token), // Tutaj przekształcamy ciąg znaków na Uri
-      headers: {"Content-Type": "application/json"},
-    );
+  change_pass(BuildContext context) async {
+    if (_formKey.currentState?.validate() == true) {
+      Map data = {
+        'token': globals.token,
+        'old_password': old_pass,
+        'new_password': new_pass1,
+      };
+      var body = json.encode(data);
+      var response = await http.post(
+          Uri.parse(server_ip +
+              '/auth/change_password'), // Tutaj przekształcamy ciąg znaków na Uri
+          headers: {"Content-Type": "application/json"},
+          body: body);
 
-    if (response.statusCode == 200) {
-      // Odpowiedź jest poprawna
-      final responseBody =
-          jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
-
-      if (responseBody == true) {
-        // Zalogowano pomyślnie
-        setState(() {
-          changeButton = true;
-        });
-        await globals.storage.delete(key: 'token');
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          MyRoutes.loginRoute,
-          (route) => false,
+      if (response.statusCode == 200) {
+        // Odpowiedź jest poprawna
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody["msg"],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
         );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      } else {
+        // Obsłuż błąd HTTP
+        print('Błąd HTTP: ${response.statusCode}');
+        print('Treść odpowiedzi: ${response.body}');
+        final hej = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(hej);
+        final snackBar = SnackBar(
+          content: Text(
+            responseBody["detail"],
+            style: TextStyle(color: Colors.white),
+          ),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.black,
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(color: Colors.deepPurple, width: 2)),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
-    } else {
-      // Obsłuż błąd HTTP
-      print('Błąd HTTP: ${response.statusCode}');
-      print('Treść odpowiedzi: ${response.body}');
     }
   }
 
@@ -94,8 +118,8 @@ class _CreateStoragesPageState extends State<ChangePasswordPage> {
                                 children: [
                                   TextFormField(
                                     decoration: InputDecoration(
-                                      hintText: "Enter name",
-                                      labelText: "name",
+                                      hintText: "Enter old password",
+                                      labelText: "old password",
                                     ),
                                     validator: (value) {
                                       if (value?.isEmpty ?? true) {
@@ -149,6 +173,28 @@ class _CreateStoragesPageState extends State<ChangePasswordPage> {
                                 ],
                               )),
                         ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            change_pass(context);
+                          },
+                          child: Container(
+                            height: 50,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 40, 1, 77),
+                                border: Border.all(
+                                    color: Color.fromARGB(255, 238, 11, 208)),
+                                borderRadius: BorderRadius.circular(16)),
+                            child: Text(
+                              "Change",
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 238, 11, 208)),
+                            ),
+                          ),
+                        )
                       ],
                     )),
               ),
