@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
+import 'package:connectivity/connectivity.dart';
 
 class Entry_screen extends StatefulWidget {
   @override
@@ -98,6 +99,20 @@ class _Entry_screenState extends State<Entry_screen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => get_online(context));
+    startMonitoring(context);
+  }
+
+  Future startMonitoring(BuildContext context) async {
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.none) {
+        // Wyświetl powiadomienie o braku połączenia internetowego
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          MyRoutes.NonetRoute,
+          (route) => false,
+        );
+      }
+    });
   }
 
   @override

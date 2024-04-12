@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../utils/CustomFABRow.dart';
 import '../widgets/entry_point.dart';
+import '../utils/custom_funtions.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => GetData(context));
+    get_online(context);
   }
 
   @override

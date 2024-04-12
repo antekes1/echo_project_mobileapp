@@ -397,7 +397,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                       .make()),
               SizedBox(height: 16),
               Container(
-                height: 570,
+                height: MediaQuery.of(context).size.height * 0.64,
                 child: ListView(scrollDirection: Axis.vertical, children: [
                   "Add or delete users to your storage: ".text.makeCentered(),
                   Container(

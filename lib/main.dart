@@ -19,7 +19,7 @@ import 'package:echo/widgets/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../utils/myGlobals.dart' as globals;
-
+import 'package:connectivity/connectivity.dart';
 import 'screens/home_page.dart';
 
 void main() {

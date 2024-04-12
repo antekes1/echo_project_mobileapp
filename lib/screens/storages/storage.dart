@@ -17,6 +17,7 @@ import '../../utils/CustomFABRow.dart';
 import '../../utils/custom_funtions.dart';
 import '../../utils/api//notifications_api.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../utils/custom_funtions.dart';
 
 class StoragePage extends StatefulWidget {
   final int storageId;
@@ -433,6 +434,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
     service.intialize();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => Get_data(context));
+    get_online(context);
   }
 
   @override
