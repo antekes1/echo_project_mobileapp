@@ -34,4 +34,4 @@ uvicorn main:app --reload
 
 # Bug Reports / Feature Suggestions
 
-You can [open an issue](https://github.com/antekes1/echo_project_server/issues) or you can join our [discord] (https://discord.gg/dRMjjtWjdc)
+You can [open an issue](https://github.com/antekes1/echo_project_server/issues) or you can join our [discord](https://discord.gg/dRMjjtWjdc)
