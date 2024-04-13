@@ -8,7 +8,7 @@
 
 <h5>echo project </h5>
 This app use Echo server.
-[link] (https://github.com/antekes1/echo_project_server)
+[link](https://github.com/antekes1/echo_project_server)
 
 # In Development / Planned
 
