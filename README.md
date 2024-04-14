@@ -1,37 +1,33 @@
-<p align="center">
-
-</p>
-
-<h1 align="center">echo project - app</h1>
+<h1 align="center">Echo Project - App</h1>
 
 ---
 
-<h5>echo project </h5>
-This app use Echo server.
-[link](https://github.com/antekes1/echo_project_server)
+<h5>Echo Project</h5>
+
+This app uses [the Echo server](https://github.com/antekes1/echo_project_server).
 
 # In Development / Planned
 
-- files searching
-- add ai
+- File searching
+- AI
 
 <!-- # Building
 
-<h5> In linux: </h5> 
+<h5> linux: </h5> 
 Download the source code using:
 
 ```bash
-git clone https://github.com/anetkes1/ehco_project_server
+git clone https://github.com/anetkes1/echo_project_server
 ```
 
-cd into repo directory and run:
+cd into the directory and run:
 
 ```bash
 source venv/bin/activate
 uvicorn main:app --reload
 ```
-<h4>*Remember you must enter a URL_DATABASE, SECRET_KEY and ALGORITM to your env. You can specify it in settings .py too</h4> -->
+<h4>*Remember tu provide URL_DATABASE, SECRET_KEY and ALGORITM in your env. You can specify it in settings.py too.*</h4> -->
 
 # Bug Reports / Feature Suggestions
 
-You can [open an issue](https://github.com/antekes1/echo_project_server/issues) or you can join our [discord](https://discord.gg/dRMjjtWjdc)
+You can [open an issue](https://github.com/antekes1/echo_project_mobileapp/issues) or you can join our [discord.](https://discord.gg/dRMjjtWjdc)
