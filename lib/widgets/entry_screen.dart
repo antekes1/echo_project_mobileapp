@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Entry_screen extends StatefulWidget {
   @override
@@ -95,11 +96,30 @@ class _Entry_screenState extends State<Entry_screen> {
     }
   }
 
+  Future<void> initiateNotificationPermission() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      await Permission.notification.request();
+    }
+    final permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isDenied) {
+      // Here just ask for the permission for the first time
+      await Permission.storage.request();
+      await Permission.manageExternalStorage.request();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    Permission.notification.isDenied.then((value) {
+      if (value) {
+        Permission.notification.request();
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => get_online(context));
     startMonitoring(context);
+    initiateNotificationPermission();
   }
 
   Future startMonitoring(BuildContext context) async {

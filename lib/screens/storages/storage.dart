@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
@@ -39,7 +40,7 @@ class _CreateStoragesPageState extends State<StoragePage> {
 
   String name_storage = "";
   int max_size = 0;
-  int actual_size = 0;
+  double actual_size = 0;
   String owner_name = "";
 
   bool changeButton = false;
@@ -253,20 +254,14 @@ class _CreateStoragesPageState extends State<StoragePage> {
             await originalFile.copy(newFilename);
           }
         }
-
         // Zapisz nowy plik
         await originalFile.writeAsBytes(bytes);
       }
     }
-    // Notification
-    await service.showNotification(
-        id: 0,
-        body: "Downloading file $filename is completed",
-        title: "Download completed");
-    print('Plik został pobrany i zapisany pomyślnie.');
   }
 
   Download_file(BuildContext context, String Filename) async {
+    await get_online(context);
     Map data = {
       'token': globals.token,
       'database_id': widget.storageId,
@@ -274,28 +269,47 @@ class _CreateStoragesPageState extends State<StoragePage> {
       "filename": Filename,
     };
     var body = json.encode(data);
-    var response = await http.post(
-        Uri.parse(server_ip +
-            '/storage/get_file'), // Tutaj przekształcamy ciąg znaków na Uri
-        headers: {"Content-Type": "application/json"},
-        body: body);
+    var response = await http.post(Uri.parse(server_ip + '/storage/get_file'),
+        headers: {"Content-Type": "application/json"}, body: body);
 
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
       // final hej = utf8.decode(response.bodyBytes);
-      // final responseBody = jsonDecode(hej);
+      // final responseBody = jsonDecode(hej)
       final bytes = response.bodyBytes;
       await SaveFile(context, Filename, response);
+      await service.showNotification(
+          id: 0,
+          body: "Downloading file $Filename is completed",
+          title: "Download completed");
+      print('Plik został pobrany i zapisany pomyślnie.');
     } else {
       // Obsłuż błąd HTTP
       print('Błąd HTTP: ${response.statusCode}');
       print('Treść odpowiedzi: ${response.body}');
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["detail"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
   TextEditingController _controller = TextEditingController();
 
   UploadFile(BuildContext context) async {
+    await get_online(context);
     FilePickerResult? result = await FilePicker.platform.pickFiles();
 
     if (result != null) {
@@ -341,6 +355,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
           behavior: SnackBarBehavior.floating,
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        await service.showNotification(
+            id: 0, body: "file is completed", title: "Upload completed");
         Get_fiels_names(context);
         Get_data(context);
       } else {
@@ -472,7 +488,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
                           .text
                           .xl2
                           .make(), // Zmiana: Dodanie dwukropka po nazwie
-                      Text("${actual_size / 1000}GB of ${max_size}GB"),
+                      Text(
+                          "${(actual_size / 1073741824).toStringAsFixed(2)}GB of ${max_size}GB"),
                     ],
                   ),
                   alignment: Alignment.centerLeft,
@@ -841,8 +858,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                                                 [1] ==
                                                             'file')
                                                           InkWell(
-                                                              onTap: () {
-                                                                Download_file(
+                                                              onTap: () async {
+                                                                await Download_file(
                                                                     context,
                                                                     actualFiles[
                                                                             index]

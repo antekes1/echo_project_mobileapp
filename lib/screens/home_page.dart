@@ -74,41 +74,51 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-                Container(
-                  // color: Colors.amber,
-                  constraints: const BoxConstraints.expand(height: 170),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: listaObiektow.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StoragePage(
-                                  storageId: listaObiektow[index][0]),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width:
-                              250, // Szerokość każdego elementu w poziomej liście
-                          margin: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(16)),
-                          child: Center(
-                            child: Text(
-                              listaObiektow[index][1],
-                              style: TextStyle(color: Colors.white),
+                if (listaObiektow.length != 0)
+                  Container(
+                    // color: Colors.amber,
+                    constraints: const BoxConstraints.expand(height: 170),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: listaObiektow.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StoragePage(
+                                    storageId: listaObiektow[index][0]),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width:
+                                250, // Szerokość każdego elementu w poziomej liście
+                            margin: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(16)),
+                            child: Center(
+                              child: Text(
+                                listaObiektow[index][1],
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  )
+                else
+                  Container(
+                    alignment: Alignment.center,
+                    height: 170,
+                    child: Text(
+                      "No storages available",
+                      style: TextStyle(fontSize: 22),
+                    ).centered(),
                   ),
-                ),
               ],
             ),
           ]),

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../utils/CustomFABRow.dart';
+import '../../utils/custom_funtions.dart';
 
 class StorageSettingsPage extends StatefulWidget {
   final int storageId;
@@ -31,7 +32,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
 
   String name_storage = "";
   int max_size = 0;
-  int actual_size = 0;
+  double actual_size = 0;
   String owner_name = "";
   String storage_description = "";
   List actual_users = [];
@@ -101,6 +102,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
   }
 
   addUsertoStorage(BuildContext context) async {
+    await get_online(context);
     Map data = {
       "token": globals.token,
       "storage_id": widget.storageId,
@@ -173,6 +175,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
   }
 
   removeUserfromStorage(BuildContext context, String userName) async {
+    await get_online(context);
     Map data = {
       "token": globals.token,
       "storage_id": widget.storageId,
@@ -227,6 +230,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
   }
 
   UpdateStorageInfo(BuildContext context) async {
+    await get_online(context);
     print(name_storage);
     print(storage_description);
     Map data = {
@@ -296,6 +300,7 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
   }
 
   deleteStorage(BuildContext context) async {
+    await get_online(context);
     Map data = {
       "token": globals.token,
       "storage_id": widget.storageId,
@@ -377,7 +382,8 @@ class _CreateStoragesPageState extends State<StorageSettingsPage> {
                         .text
                         .xl2
                         .make(), // Zmiana: Dodanie dwukropka po nazwie
-                    Text("${actual_size / 1000}GB of ${max_size}GB"),
+                    Text(
+                        "${(actual_size / 1073741824).toStringAsFixed(2)}GB of ${max_size}GB"),
                   ],
                 ),
                 alignment: Alignment.centerLeft,
