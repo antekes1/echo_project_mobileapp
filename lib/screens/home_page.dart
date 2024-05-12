@@ -32,8 +32,8 @@ class _HomePageState extends State<HomePage> {
 
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody =
-          jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
 
       if (responseBody.containsKey('storages')) {
         // Zalogowano pomyślnie

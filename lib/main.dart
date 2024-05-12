@@ -8,6 +8,7 @@ import 'package:echo/screens/user/changePassword_page.dart';
 import 'package:echo/screens/storages/create_storage.dart';
 import 'package:echo/screens/storages/storage.dart';
 import 'package:echo/screens/storages/storage_settings.dart';
+import 'package:echo/screens/auth/reset_pass.dart';
 import 'package:echo/widgets/entry_screen.dart';
 import 'package:echo/utils/routes.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../utils/myGlobals.dart' as globals;
 import 'screens/home_page.dart';
+import 'screens/register_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
@@ -43,6 +45,8 @@ class MyApp extends StatelessWidget {
         "/": (context) => Entry_screen(),
         MyRoutes.homeRoute: (context) => HomePage(),
         MyRoutes.loginRoute: (context) => LoginPage(),
+        MyRoutes.registerRoute: (context) => RegisterPage(name: ""),
+        MyRoutes.resetRoute: (context) => ResetPasswordPage(),
         MyRoutes.profileRoute: (context) => ProfilePage(),
         MyRoutes.NonetRoute: (context) => NonetPage(),
         MyRoutes.SettingsRoute: (context) => SettingsPage(),

@@ -1,6 +1,9 @@
 class MyRoutes {
   //main
   static String loginRoute = "/login";
+  static String registerRoute = "/register";
+  static String resetRoute = "/reset_password";
+
   static String homeRoute = "/home";
   static String profileRoute = "/profile";
   static String NonetRoute = "/nonet";

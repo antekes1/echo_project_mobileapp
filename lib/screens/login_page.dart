@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:echo/screens/register_page.dart';
 import 'package:echo/utils/routes.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -199,6 +201,18 @@ class _LoginPageState extends State<LoginPage> {
                     setState(() {});
                   },
                 ),
+                SizedBox(
+                  height: 8,
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, MyRoutes.resetRoute);
+                    },
+                    child: Text("forgot password?"),
+                  ),
+                ),
                 SizedBox(height: 20.0),
                 InkWell(
                   onTap: () => moveToHome(context),
@@ -226,6 +240,23 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.deepPurple[900],
                     ),
                   ),
+                ),
+                Text("or"),
+                SizedBox(
+                  height: 8,
+                ),
+                InkWell(
+                  child: Text(
+                    "register",
+                    style: TextStyle(color: Colors.blue.shade800, fontSize: 17),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegisterPage(name: name),
+                        ));
+                  },
                 ),
               ],
             ),

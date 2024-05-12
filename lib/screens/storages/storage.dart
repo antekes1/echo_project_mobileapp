@@ -62,7 +62,8 @@ class _CreateStoragesPageState extends State<StoragePage> {
 
     if (response.statusCode == 200) {
       // Odpowiedź jest poprawna
-      final responseBody = jsonDecode(response.body);
+      final hej = utf8.decode(response.bodyBytes);
+      final responseBody = jsonDecode(hej);
       // Zalogowano pomyślnie
       setState(() {
         name_storage = responseBody['name'];
@@ -479,28 +480,53 @@ class _CreateStoragesPageState extends State<StoragePage> {
                     );
                   });
                 },
-                child: Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start, // Ustawienie wyrównania do lewej
-                    children: [
-                      "${name_storage} storage:"
-                          .text
-                          .xl2
-                          .make(), // Zmiana: Dodanie dwukropka po nazwie
-                      Text(
-                          "${(actual_size / 1073741824).toStringAsFixed(2)}GB of ${max_size}GB"),
-                    ],
-                  ),
-                  alignment: Alignment.centerLeft,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(17)),
-                    border: Border.all(
-                        color: isClicked
-                            ? Colors.deepPurple.shade700
-                            : Colors.grey),
-                  ),
-                  padding: EdgeInsets.all(9),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment
+                              .start, // Ustawienie wyrównania do lewej
+                          children: [
+                            "${name_storage} storage:"
+                                .text
+                                .xl2
+                                .make(), // Zmiana: Dodanie dwukropka po nazwie
+                            Text(
+                                "${(actual_size / 1073741824).toStringAsFixed(2)}GB of ${max_size}GB"),
+                          ],
+                        ),
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(17)),
+                          border: Border.all(
+                              color: isClicked
+                                  ? Colors.deepPurple.shade700
+                                  : Colors.grey),
+                        ),
+                        padding: EdgeInsets.all(9),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 3,
+                    ),
+                    Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(17)),
+                        border: Border.all(
+                            color: isClicked
+                                ? Colors.deepPurple.shade700
+                                : Colors.grey),
+                      ),
+                      padding: EdgeInsets.all(9),
+                      alignment: Alignment.center,
+                      child: Icon(Icons.settings),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 16),
