@@ -35,8 +35,8 @@ bool aa_value = false;
 get_online(BuildContext context) async {
   try {
     var response = await http.get(
-      Uri.parse(
-          server_ip + '/status'), // Tutaj przekształcamy ciąg znaków na Uri
+      Uri.parse(server_ip +
+          '/server/status'), // Tutaj przekształcamy ciąg znaków na Uri
       headers: {"Content-Type": "application/json"},
     );
     final responseBody = jsonDecode(response.body);

@@ -865,7 +865,24 @@ class _CreateStoragesPageState extends State<StoragePage> {
                                                       MainAxisAlignment
                                                           .spaceBetween,
                                                   children: [
-                                                    Text(actualFiles[index][0]),
+                                                    Expanded(
+                                                      child: Container(
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerLeft,
+                                                          child: FittedBox(
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                            child: Text(
+                                                              actualFiles[index]
+                                                                  [0],
+                                                              style:
+                                                                  TextStyle(),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
                                                     Row(
                                                       children: [
                                                         InkWell(
