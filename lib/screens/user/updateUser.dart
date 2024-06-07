@@ -24,11 +24,13 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
   String email = globals.email;
   String name = globals.name;
   String username_field = globals.username;
+  String ver_code = "";
 
   TextEditingController _textController = TextEditingController(text: "test");
   late TextEditingController _emailController = TextEditingController();
   late TextEditingController _nameController = TextEditingController();
   late TextEditingController _usernameController = TextEditingController();
+  late TextEditingController _codeController = TextEditingController();
 
   @override
   void initState() {
@@ -41,6 +43,7 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
     _emailController.dispose();
     _nameController.dispose();
     _usernameController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
   // TextEditingController _usernameController =
@@ -91,12 +94,69 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
     }
   }
 
+  SendVeryficationCode(BuildContext context) async {
+    if (email == "") {
+      final snackBar = SnackBar(
+        content: Text(
+          'You nedded to enter new email',
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      Map data = {
+        'email': email,
+      };
+      //encode Map to JSON
+      var body = json.encode(data);
+
+      var response = await http.post(
+          Uri.parse(server_ip +
+              '/auth/create_verification_request'), // Tutaj przekształcamy ciąg znaków na Uri
+          headers: {"Content-Type": "application/json"},
+          body: body);
+
+      if (response.statusCode == 200) {
+        final responseBody =
+            jsonDecode(response.body); // Parsuj treść odpowiedzi JSON
+        if (responseBody.containsKey('msg')) {
+          final snackBar = SnackBar(
+            content: Text(
+              'Sent',
+              style: TextStyle(color: Colors.white),
+            ),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.transparent,
+            elevation: 0.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+                side: BorderSide(color: Colors.deepPurple, width: 2)),
+            behavior: SnackBarBehavior.floating,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      } else {
+        // Obsłuż błąd HTTP
+        print('Błąd HTTP: ${response.statusCode}');
+        print('Treść odpowiedzi: ${response.body}');
+      }
+    }
+  }
+
   UpdateUserInfo(BuildContext context) async {
     Map data = {
       'token': globals.token,
       'name': name,
       'username': username_field,
       'email': email,
+      'request_code': ver_code,
     };
     //encode Map to JSON
     var body = json.encode(data);
@@ -130,6 +190,21 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
       // Obsłuż błąd HTTP
       print('Błąd HTTP: ${response.statusCode}');
       print('Treść odpowiedzi: ${response.body}');
+      final responseBody = jsonDecode(response.body);
+      final snackBar = SnackBar(
+        content: Text(
+          responseBody["detail"],
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.deepPurple, width: 2)),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -199,6 +274,44 @@ class _UpdateUserPageState extends State<UpdateUserPage> {
                     email = value;
                     setState(() {});
                   },
+                ),
+              ),
+              SizedBox(height: 10),
+              Container(
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _codeController,
+                        keyboardType: TextInputType.text,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                            borderSide: BorderSide(color: Colors.pink),
+                          ),
+                          suffixText: "code",
+                          labelText: "verification code",
+                          prefixIcon: Icon(Icons.pin),
+                        ),
+                        onChanged: (value) {
+                          ver_code = value;
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                    Container(
+                      child: ElevatedButton(
+                        onPressed: () => SendVeryficationCode(context),
+                        child: Text(
+                          'Sent code',
+                          textAlign: TextAlign.center,
+                        ),
+                        style: ButtonStyle(alignment: Alignment.center),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 20),
