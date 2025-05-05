@@ -19,8 +19,6 @@ You can use code from this project as long as you disclose the source of your wo
 - File searching
 - AI
 
-<h4>*Remember tu provide URL_DATABASE, SECRET_KEY and ALGORITM in your env. You can specify it in settings.py too.*</h4> -->
-
 # Bug Reports / Feature Suggestions
 
 You can [open an issue](https://github.com/antekes1/echo_project_mobileapp/issues) or you can join our [discord.](https://discord.gg/dRMjjtWjdc)
